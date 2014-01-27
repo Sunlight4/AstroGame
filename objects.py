@@ -2,7 +2,7 @@ import pygame, random
 class Team(pygame.sprite.Group):
     """Convenience group, when characters run out of HP calls sprite.on_destroy()
 then destroys it if on_destroy() returns True."""
-    def update(self, **kw):
+    def update(self, kw):
         for i in self.sprites():
             if i.hp <= 0:
                 try:cond=i.on_destroy()
@@ -27,7 +27,7 @@ class Projectile(pygame.sprite.Sprite):
             self.hp-=damage
     def update(self, **kw):
         target=kw[self.target]
-        x=pygame.sprite.spritecollide(self, target, False):
+        x=pygame.sprite.spritecollide(self, target, False)
         if x:
             for i in x:
                 i.defend(self.battle, self.kind)
