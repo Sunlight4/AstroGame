@@ -20,17 +20,21 @@ class Projectile(pygame.sprite.Sprite):
         self.target=target
         self.hp=hp
         self.kind=kind
+        self.status="N/A"
+        super(Projectile, self).__init__()
     def attack_turn(self):pass
     def defend(self, damage, kind):
         if self.kind==kind:pass
         else:
             self.hp-=damage
-    def update(self, **kw):
+    def on_destroy(self):return 1
+    def update(self, kw):
         target=kw[self.target]
         x=pygame.sprite.spritecollide(self, target, False)
         if x:
             for i in x:
-                i.defend(self.battle, self.kind)
+                dmg=random.randrange(0, self.battle)
+                i.defend(dmg, self.kind)
                 self.hp-=self.battle
         xspeed=self.direction[0]*self.speed
         yspeed=self.direction[1]*self.speed

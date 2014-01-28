@@ -1,6 +1,6 @@
-import pygame, random
+import pygame, random, objects
 class PoliceGood(pygame.sprite.Sprite):
-    def __init__(self, pos=[0,0], hp=10, battle=3, img="PDGood.png", speed=4):
+    def __init__(self, pos=[0,0], hp=5, battle=2, img="PDGood.png", speed=4):
         self.battle=battle
         self.hp=hp
         super(PoliceGood, self).__init__()
@@ -36,7 +36,7 @@ class PoliceGood(pygame.sprite.Sprite):
         if not pygame.sprite.spritecollide(self, solid_group, False):
             self.rect.top+=3
 class PoliceEnemy(pygame.sprite.Sprite):
-    def __init__(self, pos=[0,0], hp=10, battle=2, img="PDBad.png", speed=4):
+    def __init__(self, pos=[0,0], hp=5, battle=2, img="PDBad.png", speed=4):
         self.battle=battle
         self.hp=hp
         self.image=pygame.image.load(img)
@@ -72,8 +72,9 @@ class PoliceEnemy(pygame.sprite.Sprite):
         solid_group=kw["solid"]
         if not pygame.sprite.spritecollide(self, solid_group, False):
             self.rect.top+=3
+
 class Jailer(pygame.sprite.Sprite):
-    def __init__(self, pos=[0,0], hp=10, battle=2, img="Jailer.png", speed=2, defense=1):
+    def __init__(self, pos=[0,0], hp=12, battle=3, img="Jailer.png", speed=2, defense=1):
         self.battle=battle
         self.hp=hp
         self.image=pygame.image.load(img)
@@ -87,14 +88,14 @@ class Jailer(pygame.sprite.Sprite):
     def defend(self, damage, kind):
         defense=random.randint(0, self.defense)
         dmg=damage-defense
-        self.hp-=dmg
+        if dmg>0:self.hp-=dmg
     def attack_turn(self):
         self.status="searching"
     def on_destroy(self):return 1
     def update(self, kw):
         if self.status=="searching":
             heroes=kw["heroes"]
-            try:self.target=random.choice(heroes.sprites())
+            try:self.target=heroes.sprites()[0]
             except:self.status="idle"
             else:self.status="attack"
         elif self.status=="attack":
@@ -112,6 +113,111 @@ class Jailer(pygame.sprite.Sprite):
         if not pygame.sprite.spritecollide(self, solid_group, False):
             self.rect.top+=3
 
+class Astro(pygame.sprite.Sprite):
+    def __init__(self, pos=[0,0], hp=10, battle=3, jump=12, img="Astro.png", speed=4, defense=1):
+        self.battle=battle
+        self.hp=10
+        self.image=pygame.image.load(img)
+        self.rect=self.image.get_rect()
+        self.rect.left, self.rect.top=pos
+        self.target=None
+        self.speed=speed
+        self.defense=defense
+        self.attacking=False
+        self.trying=False
+        self.jump=jump
+        self.attack=3
+        self.status="N/A"
+        super(Astro, self).__init__()
+    def on_destroy(self):
+        pygame.quit()
+        raise SystemExit
+    def defend(self, damage, kind):
+        defense=random.randint(0, self.defense)
+        dmg=damage-defense
+        if dmg>0:self.hp-=dmg
+    def attack_turn(self):pass
+    def update(self, kw):
+        solid=kw["solid"]
+        print "HP: "+str(self.hp)
+        print "Attack: "+str(self.attack)
+        print self.attacking
+        villains=kw["villains"]
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            elif event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_LEFT:
+                    self.rect.left-=self.speed
+                elif event.key==pygame.K_RIGHT:
+                    self.rect.right+=self.speed
+                elif event.key==pygame.K_UP:
+                    if self.jump > 0:
+                        self.rect.top-=8
+                        self.jump-=1
+                elif event.key==pygame.K_SPACE:
+                    if self.attack > 0:
+                        self.attacking=True
+                        self.attack-=1
+            elif event.type==pygame.KEYUP:
+                if event.key==pygame.K_SPACE:
+                    self.attacking=False
+
+
+        if not self.attacking:
+            if self.attack < 3:
+                self.attack+=1
+        attacking=self.attack > 0 and self.attacking
+        if attacking:
+            proj=objects.Projectile(img="Bullet.png", battle=   1, hp=1, speed=8,
+                                    pos=self.rect.topleft, direction=[1,0], target="villains")
+            kw["heroes"].add(proj)
+            kw["rendered"].add(proj)
+        if not pygame.sprite.spritecollide(self, solid, False):
+            self.rect.top+=3
+        else:
+            self.jump=12
+class Shado(pygame.sprite.Sprite):
+    def __init__(self, pos=[0,0], hp=15, battle=3, img="Shado.png", speed=2, defense=0):
+        self.battle=battle
+        self.hp=hp
+        self.image=pygame.image.load(img)
+        self.rect=self.image.get_rect()
+        self.rect.left, self.rect.top=pos
+        self.status="idle"
+        self.target=None
+        self.speed=speed
+        self.defense=defense
+        super(Shado, self).__init__()
+    def defend(self, damage, kind):
+        defense=random.randint(0, self.defense)
+        dmg=damage-defense
+        if dmg>0:self.hp-=dmg
+    def attack_turn(self):
+        self.status="searching"
+    def on_destroy(self):return 1
+    def update(self, kw):
+        print "Boss HP: "+str(self.hp)
+        if self.status=="searching":
+            heroes=kw["heroes"]
+            try:self.target=heroes.sprites()[0]
+            except:self.status="idle"
+            else:self.status="attack"
+        elif self.status=="attack":
+            if pygame.sprite.collide_rect(self, self.target):
+                dmg=random.randint(0, self.battle)
+                self.target.defend(dmg, "melee")
+                self.status="idle"
+            else:
+                tx=self.target.rect.left
+                if self.rect.left > tx:
+                    self.rect.left -= self.speed
+                elif self.rect.left < tx:
+                    self.rect.left += self.speed
+        solid_group=kw["solid"]
+        if not pygame.sprite.spritecollide(self, solid_group, False):
+            self.rect.top+=3
 class SolidTile(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=10, battle=2, img="Tile.png", speed=4, defense=1):
         self.image=pygame.image.load(img)
