@@ -30,6 +30,7 @@ class Projectile(pygame.sprite.Sprite):
     def on_destroy(self):return 1
     def update(self, kw):
         target=kw[self.target]
+        self.hp-=1
         x=pygame.sprite.spritecollide(self, target, False)
         if x:
             for i in x:
