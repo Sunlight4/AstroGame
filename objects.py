@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random, characters
 class Team(pygame.sprite.Group):
     """Convenience group, when characters run out of HP calls sprite.on_destroy()
 then destroys it if on_destroy() returns True."""
@@ -41,6 +41,26 @@ class Projectile(pygame.sprite.Sprite):
         yspeed=self.direction[1]*self.speed
         self.rect.left+=xspeed
         self.rect.top+=yspeed
+class ShadowBall(pygame.sprite.Sprite):
+    def __init__(self, battle, pos, img="ShadowBall.png", target="heroes"):
+        self.battle=battle
+        self.image=pygame.image.load(img)
+        self.hp=5
+        self.target=target
+        self.status="DOOM"
+        self.rect=self.image.get_rect(topleft=pos)
+        super(ShadowBall, self).__init__()
+    def on_destroy(self):
+        good=characters.PoliceGood(pos=self.rect.topleft, hp=1, battle=1, speed=2)
+        for i in self.groups():
+            i.add(good)
+        return 1
+    def update(self, kw):
+        self.hp-=1
+        targets=kw[self.target]
+        for i in pygame.sprite.spritecollide(self, targets, False):
+            i.defend(self.battle, "shadow")
+        
 
 
 

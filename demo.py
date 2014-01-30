@@ -3,10 +3,10 @@ pygame.init()
 mixer=pygame.mixer
 mixer.init()
 music=mixer.music
-music.load("PDTheme.ogg")
+music.load("Vesto70MainTheme.ogg")
 music.set_volume(1)
 music.play(-1)
-pygame.key.set_repeat(1, 1)
+pygame.key.set_repeat(10, 10)
 screen=pygame.display.set_mode([640,480])
 fill=screen.fill
 blit=screen.blit
@@ -20,18 +20,25 @@ bad=characters.PoliceEnemy(pos=[320,320])
 bad2=characters.PoliceEnemy(pos=[288,320])
 solid=pygame.sprite.Group()
 for i in range(0, 320, 64):
-    s=characters.SolidTile(pos=[i, 320+64])
+    s=characters.PixelTile(pos=[i, 320+64])
     solid.add(s)
-s=characters.SolidTile(pos=[64, 320])
+for i in range(320, 640, 64):
+    s=characters.PixelTile(pos=[i, 530])
+    solid.add(s)
+for i in range(384, 640, 64):
+    s=characters.PixelTile(pos=[i, 320-128])
+    solid.add(s)
+
+s=characters.PixelTile(pos=[64, 320])
 solid.add(s)
-s=characters.SolidTile(pos=[128, 320])
+s=characters.PixelTile(pos=[128, 320])
 solid.add(s)
-s=characters.SolidTile(pos=[128, 320-64])
+s=characters.PixelTile(pos=[128, 320-64])
 solid.add(s)
-s=characters.SolidTile(pos=[192, 320-64])
+s=characters.PixelTile(pos=[192, 320-64])
 solid.add(s)
-s=characters.SolidTile(pos=[384, 320+128])
-s=characters.SolidTile(pos=[320, 320+128])
+s=characters.PixelTile(pos=[384, 320+128])
+s=characters.PixelTile(pos=[320, 320+128])
 solid.add(s)
 
 heroes=objects.Team()
@@ -49,7 +56,7 @@ rendered.add(good2)
 rendered.add(good3)
 for i in solid.sprites():rendered.add(i)
 while True:
-    screen.fill([100,100,255])
+    screen.fill([0,0,0])
     rendered.draw(screen)
     clock.tick(30)
     events=pygame.event.get()
@@ -58,7 +65,8 @@ while True:
     for s in heroes.sprites():
         if s.status=="idle":s.attack_turn()
 
-    villains.update({"heroes":heroes, "villains":villains, "solid":solid, "rendered":rendered})
+    villains.update({"heroes":heroes, "villains":villains, "solid":solid, "rendered":rendered,
+                     "events":events})
     for s in villains.sprites():
         if s.status=="idle":s.attack_turn()
     flip()
