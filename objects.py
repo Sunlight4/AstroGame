@@ -31,7 +31,7 @@ class Projectile(pygame.sprite.Sprite):
     def update(self, kw):
         target=kw[self.target]
         self.hp-=1
-        x=pygame.sprite.spritecollide(self, target, False)
+        x=pygame.sprite.spritecollide(self, target, False, pygame.sprite.collide_rect)
         if x:
             for i in x:
                 dmg=random.randrange(0, self.battle)
@@ -50,16 +50,20 @@ class ShadowBall(pygame.sprite.Sprite):
         self.status="DOOM"
         self.rect=self.image.get_rect(topleft=pos)
         super(ShadowBall, self).__init__()
+    def defend(self, *args):pass
     def on_destroy(self):
-        good=characters.PoliceGood(pos=self.rect.topleft, hp=1, battle=1, speed=2)
-        for i in self.groups():
-            i.add(good)
-        return 1
+        if random.random() < 0.25:
+            good=characters.PoliceEnemy(pos=[self.rect.left, 0], hp=0.1, battle=1, speed=2)
+            for i in self.groups():
+                i.add(good)
+            return 1
     def update(self, kw):
         self.hp-=1
+        self.villains=kw["villains"]
+        self.renderer=kw["rendered"]
         targets=kw[self.target]
-        for i in pygame.sprite.spritecollide(self, targets, False):
-            i.defend(self.battle, "shadow")
+        for i in pygame.sprite.spritecollide(self, targets, False, pygame.sprite.collide_rect):
+             i.defend(self.battle, "shadow")
         
 
 
