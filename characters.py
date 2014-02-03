@@ -1,4 +1,4 @@
-import pygame, random, objects
+import pygame, random, objects, rooms, load
 class PoliceGood(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=5, battle=2, img="PDGood.png", speed=4):
         self.battle=battle
@@ -22,7 +22,7 @@ class PoliceGood(pygame.sprite.Sprite):
             except:self.status="idle"
             else:self.status="attack"
         elif self.status=="attack":
-            if pygame.sprite.collide_rect(self, self.target):
+            if pygame.sprite.collide_mask(self, self.target):
                 dmg=random.randint(0, self.battle)
                 self.target.defend(dmg, "melee")
                 self.status="idle"
@@ -33,13 +33,13 @@ class PoliceGood(pygame.sprite.Sprite):
                 elif self.rect.left < tx:
                     self.rect.left += self.speed
             heroes=kw["villains"]
-            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_rect)
+            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_mask)
             if x:
                 for sprite in x:
                     dmg=random.randint(0, self.battle)
                     self.target.defend(dmg, "melee")
         solid_group=kw["solid"]
-        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
             self.rect.top+=3
 class PoliceEnemy(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=5, battle=2, img="PDBad.png", speed=2):
@@ -55,35 +55,19 @@ class PoliceEnemy(pygame.sprite.Sprite):
     def defend(self, damage, kind):
         self.hp-=damage
     def attack_turn(self):
-        self.status="searching"
+        self.status="attack"
     def on_destroy(self):return 1
     def update(self, kw):
-        if self.status=="searching":
-            heroes=kw["heroes"]
-            try:self.target=random.choice(heroes.sprites())
-            except:self.status="idle"
-            else:self.status="attack"
-        elif self.status=="attack":
-            if self.target.hp<=0:self.status="idle"
-            if pygame.sprite.collide_rect(self, self.target):
-                dmg=random.randint(0, self.battle)
-                print dmg
-                self.target.defend(dmg, "melee")
-                self.status="idle"
-            else:
-                tx=self.target.rect.left
-                if self.rect.left > tx:
-                    self.rect.left -= self.speed
-                elif self.rect.left < tx:
-                    self.rect.left += self.speed
-            heroes=kw["heroes"]
-            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_rect)
-            if x:
-                for sprite in x:
-                    dmg=random.randint(0, self.battle)
-                    self.target.defend(dmg, "melee")
+        if self.status=="attack":
+            shots=random.randrange(5)
+            for i in range(shots):
+                proj=objects.Projectile(img="BulletL.png", battle=2, hp=20, speed=4,
+                                        pos=self.rect.topleft)
+                kw["villains"].add(proj)
+                kw["rendered"].add(proj)
+            self.status="idle"
         solid_group=kw["solid"]
-        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
             self.rect.top+=3
 class Jailer(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=10, battle=3, img="Jailer.png", speed=2, defense=1):
@@ -112,7 +96,7 @@ class Jailer(pygame.sprite.Sprite):
             else:self.status="attack"
         elif self.status=="attack":
             if self.target.hp<=0:self.status="idle"
-            if pygame.sprite.collide_rect(self, self.target):
+            if pygame.sprite.collide_mask(self, self.target):
                 dmg=random.randint(0, self.battle)
                 self.target.defend(dmg, "melee")
                 self.status="idle"
@@ -123,13 +107,13 @@ class Jailer(pygame.sprite.Sprite):
                 elif self.rect.left < tx:
                     self.rect.left += self.speed
             heroes=kw["heroes"]
-            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_rect)
+            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_mask)
             if x:
                 for sprite in x:
                     dmg=random.randint(0, self.battle)
                     self.target.defend(dmg, "melee")
         solid_group=kw["solid"]
-        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
             self.rect.top+=3
 class PixelBad(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=2, battle=3, img="PixelBad.png", speed=2, defense=1):
@@ -158,7 +142,7 @@ class PixelBad(pygame.sprite.Sprite):
             else:self.status="attack"
         elif self.status=="attack":
             if self.target.hp<=0:self.status="idle"
-            if pygame.sprite.collide_rect(self, self.target):
+            if pygame.sprite.collide_mask(self, self.target):
                 dmg=random.randint(0, self.battle)
                 self.target.defend(dmg, "melee")
                 self.status="idle"
@@ -169,13 +153,13 @@ class PixelBad(pygame.sprite.Sprite):
                 elif self.rect.left < tx:
                     self.rect.left += self.speed
             heroes=kw["heroes"]
-            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_rect)
+            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_mask)
             if x:
                 for sprite in x:
                     dmg=random.randint(0, self.battle)
                     self.target.defend(dmg, "melee")
         solid_group=kw["solid"]
-        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
             self.rect.top+=3
 class Sotve(pygame.sprite.Sprite):
     powerups=[]
@@ -252,7 +236,7 @@ class Sotve(pygame.sprite.Sprite):
                                     pos=self.rect.topleft, direction=[1,0], target="villains")
             kw["heroes"].add(proj)
             kw["rendered"].add(proj)
-        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_mask):
             self.rect.top+=3
         else:
             self.jump=12
@@ -334,12 +318,12 @@ class Lionel(pygame.sprite.Sprite):
         attacking=self.attack > 0 and self.attacking
         gold_attack=self.attack > 0 and self.gold_attack
         if gold_attack:
-            x=pygame.sprite.spritecollide(self, kw["villains"], False, pygame.sprite.collide_rect)
+            x=pygame.sprite.spritecollide(self, kw["villains"], False, pygame.sprite.collide_mask)
             if x:
                 for sprite in x:
                     sprite.defend((self.battle + self.attack), "melee")
         elif attacking:
-            x=pygame.sprite.spritecollide(self, kw["villains"], False, pygame.sprite.collide_rect)
+            x=pygame.sprite.spritecollide(self, kw["villains"], False, pygame.sprite.collide_mask)
             if x:
                 for sprite in x:
                     sprite.defend((self.battle + self.attack) // 2, "melee")
@@ -352,7 +336,7 @@ class Lionel(pygame.sprite.Sprite):
         else:
             self.image=pygame.image.load("Lionel.png")
         if gold_attack:self.attack-=1
-        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_mask):
             self.rect.top+=3
         else:
             self.jump=12
@@ -410,7 +394,7 @@ class GhostAstro(pygame.sprite.Sprite):
         if not self.attacking:
             if self.attack < 3:
                 self.attack+=1
-        x=pygame.sprite.spritecollide(self, kw["heroes"], False, pygame.sprite.collide_rect)
+        x=pygame.sprite.spritecollide(self, kw["heroes"], False, pygame.sprite.collide_mask)
         for sprite in x:
             sprite.hp-=0.1
         attacking=self.attack > 0 and self.attacking
@@ -419,7 +403,7 @@ class GhostAstro(pygame.sprite.Sprite):
                                     pos=self.rect.topleft, direction=[-1,0], target="heroes")
             kw["villains"].add(proj)
             kw["rendered"].add(proj)
-        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_mask):
             self.rect.top+=3
         else:
             self.jump=12
@@ -503,7 +487,7 @@ class Ostra(pygame.sprite.Sprite):
                                     pos=self.rect.topleft, direction=[1,0], target="villains")
             kw["heroes"].add(proj)
             kw["rendered"].add(proj)
-        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_mask):
             self.rect.top+=3
         else:
             self.jump=16
@@ -587,7 +571,7 @@ class Astro(pygame.sprite.Sprite):
                                     pos=self.rect.topleft, direction=[1,0], target="villains")
             kw["heroes"].add(proj)
             kw["rendered"].add(proj)
-        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid, False, pygame.sprite.collide_mask):
             self.rect.top+=3
         else:
             self.jump=12
@@ -619,7 +603,7 @@ class Shado(pygame.sprite.Sprite):
             else:self.status="attack"
         elif self.status=="attack":
             if self.target.hp<=0:self.status="idle"
-            if pygame.sprite.collide_rect(self, self.target):
+            if pygame.sprite.collide_mask(self, self.target):
                 dmg=random.randint(0, self.battle)
                 self.target.defend(dmg, "melee")
                 self.status="idle"
@@ -630,16 +614,16 @@ class Shado(pygame.sprite.Sprite):
                 elif self.rect.left < tx:
                     self.rect.left += self.speed
             heroes=kw["heroes"]
-            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_rect)
+            x=pygame.sprite.spritecollide(self, heroes, False, pygame.sprite.collide_mask)
             if x:
                 for sprite in x:
                     dmg=random.randint(0, self.battle)
                     self.target.defend(dmg, "melee")
         solid_group=kw["solid"]
-        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_rect):
+        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
             self.rect.top+=3
 class SolidTile(pygame.sprite.Sprite):
-    def __init__(self, pos=[0,0], hp=10, battle=2, img="Tile.png", speed=4, defense=1):
+    def __init__(self, pos=[0,0], hp=10, battle=2, img="Grass.png", speed=4, defense=1):
         self.image=pygame.image.load(img)
         self.rect=self.image.get_rect()
         self.rect.left, self.rect.top=pos
@@ -650,6 +634,32 @@ class PixelTile(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.left, self.rect.top=pos
         super(PixelTile, self).__init__()
-
- 
-        
+class WoodTile(pygame.sprite.Sprite):
+    def __init__(self, pos=[0,0], hp=10, battle=2, img="WoodBlock.png", speed=4, defense=1):
+        self.image=pygame.image.load(img)
+        self.rect=self.image.get_rect()
+        self.rect.left, self.rect.top=pos
+        super(WoodTile, self).__init__()
+class Door(pygame.sprite.Sprite):
+    def __init__(self, pos=[0,0], hp=10, battle=2, img="Door.png", speed=4, defense=1, room=None):
+        self.image=pygame.image.load(img)
+        self.rect=self.image.get_rect()
+        self.rect.left, self.rect.top=pos
+        self.room=room
+        self.hp=10
+        self.status="Being a door"
+        super(Door, self).__init__()
+    def defend(self, *args):pass
+    def update(self,kw):
+        for i in kw["events"]:
+            if i.type==pygame.KEYDOWN and i.key==pygame.K_SPACE:
+                x=pygame.sprite.spritecollide(self, kw["heroes"], False, pygame.sprite.collide_mask)
+                if x:
+                    load.loadroom(self.room)
+class CityTile(pygame.sprite.Sprite):
+    def __init__(self, pos=[0,0], hp=10, battle=2, img="Metal.png", speed=4, defense=1):
+        self.image=pygame.image.load(img)
+        self.rect=self.image.get_rect()
+        self.rect.left, self.rect.top=pos
+        super(CityTile, self).__init__()
+         
