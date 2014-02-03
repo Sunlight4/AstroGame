@@ -41,6 +41,34 @@ class PoliceGood(pygame.sprite.Sprite):
         solid_group=kw["solid"]
         if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
             self.rect.top+=3
+class Ghost(pygame.sprite.Sprite):
+    def __init__(self, pos=[0,0], hp=5, battle=2, img="Ghost.png", speed=4):
+        self.battle=battle
+        self.hp=hp
+        self.image=pygame.image.load(img)
+        self.rect=self.image.get_rect()
+        self.rect.left, self.rect.top=pos
+        self.status="idle"
+        self.target=None
+        self.speed=speed
+        super(Ghost, self).__init__()
+    def defend(self, damage, kind):
+        self.hp-=damage
+    def attack_turn(self):
+        self.status="attack"
+    def on_destroy(self):return 1
+    def update(self, kw):
+        if self.status=="attack":
+            shots=random.randrange(5)
+            for i in range(shots):
+                proj=objects.Projectile(img="BulletL.png", battle=4, hp=48, speed=8,
+                                        pos=self.rect.topleft)
+                kw["villains"].add(proj)
+                kw["rendered"].add(proj)
+            self.status="idle"
+        solid_group=kw["solid"]
+        if not pygame.sprite.spritecollide(self, solid_group, False, pygame.sprite.collide_mask):
+            self.rect.top+=3
 class PoliceEnemy(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=5, battle=2, img="PDBad.png", speed=2):
         self.battle=battle
@@ -61,7 +89,7 @@ class PoliceEnemy(pygame.sprite.Sprite):
         if self.status=="attack":
             shots=random.randrange(5)
             for i in range(shots):
-                proj=objects.Projectile(img="BulletL.png", battle=2, hp=20, speed=4,
+                proj=objects.Projectile(img="BulletL.png", battle=2, hp=32, speed=4,
                                         pos=self.rect.topleft)
                 kw["villains"].add(proj)
                 kw["rendered"].add(proj)
@@ -653,9 +681,11 @@ class Door(pygame.sprite.Sprite):
     def update(self,kw):
         for i in kw["events"]:
             if i.type==pygame.KEYDOWN and i.key==pygame.K_SPACE:
+                kw["heroes"].remove(self)
                 x=pygame.sprite.spritecollide(self, kw["heroes"], False, pygame.sprite.collide_mask)
                 if x:
                     load.loadroom(self.room)
+                kw["heroes"].add(self)
 class CityTile(pygame.sprite.Sprite):
     def __init__(self, pos=[0,0], hp=10, battle=2, img="Metal.png", speed=4, defense=1):
         self.image=pygame.image.load(img)

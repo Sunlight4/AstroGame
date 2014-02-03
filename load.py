@@ -7,7 +7,7 @@ def loadroom(room):
     heroes, villains, solid, rendered, music_name, bg=room()
     print villains.sprites()
     music.load(music_name)
-    music.set_volume(1)
+    music.set_volume(0.5)
     music.play(-1)
     pygame.key.set_repeat(10, 10)
     screen=pygame.display.set_mode([640,480])
@@ -27,5 +27,5 @@ def loadroom(room):
         villains.update({"heroes":heroes, "villains":villains, "solid":solid, "rendered":rendered,
                          "events":events})
         for s in villains.sprites():
-            if s.status=="idle" and random.random() < 0.025:s.attack_turn()
+            if s.status=="idle" and random.random() < 0.075:s.attack_turn()
         flip()
